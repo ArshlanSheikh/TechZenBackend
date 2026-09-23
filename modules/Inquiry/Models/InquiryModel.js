@@ -46,8 +46,8 @@ const InquiryModelSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
-            minlength: 20,
-            maxlength: 3000,
+            minlength: 0,
+            maxlength: 100,
         },
         status:{
             type: String,

@@ -5,7 +5,7 @@ import InquiryRoutes from './Inquiry/Routes/InquiryRoutes.js';
 const IndexRoutes = express.Router()
 
 
-IndexRoutes.use('/inquiry',InquiryRoutes)
+IndexRoutes.use('/api/v1/inquiry',InquiryRoutes)
 
 
 
