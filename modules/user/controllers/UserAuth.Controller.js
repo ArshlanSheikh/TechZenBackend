@@ -1,10 +1,8 @@
 import bcrypt from "bcrypt";
 import UserModel from "../models/UserModel.js";
-import {
-  isEmailExists,
-  isPhoneExists,
-} from "../services/UserValidation.Services.js";
 import jwt from "jsonwebtoken";
+
+import { isEmailExists,isPhoneExists,} from "../services/UserValidation.Services.js";
 import { verifyOtp } from "../../../Services/OptServices.js";
 
 
@@ -208,6 +206,7 @@ const userLogin = async (req, res) => {
     });
 
     if (missingFields.length > 0) {
+      console.log("required fields missing");
       return res.status(400).json({
         success: false,
         message: "required fields missing",
@@ -230,6 +229,7 @@ const userLogin = async (req, res) => {
     });
 
     if (!user) {
+      console.log("User Not Found");
       return res.status(400).json({
         success: false,
         message: "User Not Found",
@@ -239,6 +239,7 @@ const userLogin = async (req, res) => {
     }
 
     if (commingData.password.length < 8) {
+      console.log("Password must be at least 8 characters");
       return res.status(400).json({
         success: false,
         message: "Password must be at least 8 characters",
@@ -253,6 +254,7 @@ const userLogin = async (req, res) => {
     );
 
     if (!verifiedPassword) {
+      console.log("Invalid credentials");
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",

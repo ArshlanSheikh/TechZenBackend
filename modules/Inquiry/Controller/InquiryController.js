@@ -81,14 +81,16 @@ const GetAllInquiry = async (req, res) => {
 // ============================================
 const RegisterInquiry = async (req, res) => {
     try {
+        console.log('Hit RegisterInquiry Api....')
         const commingData = req.body;
 
         const RequiredFields = [
             "name",
             "email",
+            "phone",
             "service",
+            "contactMethod",
             "message",
-            "status",
         ];
 
         const MissingFields = RequiredFields.filter((item) => {
@@ -107,6 +109,19 @@ const RegisterInquiry = async (req, res) => {
                 error: MissingFields,
             });
         }
+
+        if(commingData.phone.length !== 10){
+            return res.status(400).json({success:false,message:"Phone number must contain exactly 10 digits",data:null,error:"Phone number must contain exactly 10 digits" ,})
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(commingData.email.trim())){
+            return res.status(400).json({success:false,message:"Invalid email address",data:null,error:"Invalid email address" ,})
+        }
+
+
+        commingData['status'] = 'new'
+        commingData.company = commingData.company === "" ? "private" : commingData.company;
 
         const NewInquiry = await InquiryModel.create(commingData);
 

@@ -28,6 +28,7 @@ const InquiryModelSchema = new mongoose.Schema(
             type: String,
             trim: true,
             maxlength: 160,
+            default:"private"
         },
 
         service: {
@@ -44,10 +45,9 @@ const InquiryModelSchema = new mongoose.Schema(
 
         message: {
             type: String,
-            required: true,
             trim: true,
-            minlength: 0,
-            maxlength: 100,
+            minlength: 20,
+            maxlength: 2000,
         },
         status:{
             type: String,

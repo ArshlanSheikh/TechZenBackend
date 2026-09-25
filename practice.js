@@ -1,0 +1,1 @@
+// The GST portal documentation specifically says e-invoice details are received from the Invoice Registration Portal and used to populate relevant GSTR-1 tables.

@@ -11,6 +11,9 @@ InquiryRoutes.put('/update/:id',UpdateInquiry)
 InquiryRoutes.delete('/delete/:id',DeleteInquiry)
 
 
-// http://localhost:5000/api/v1/inquiry/regester
+
+// http://localhost:5000/api/v1/inquiry/regester 
+
+   
 
 export default InquiryRoutes;
