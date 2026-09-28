@@ -74,10 +74,15 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    roles:{
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    roles: {
       type: [String],
-      enum: ["buyer", "admin"],
-      default: ["buyer"]
+      enum: ["buyer", "user", "admin"],
+      default: undefined,
     },
 
     provider:{

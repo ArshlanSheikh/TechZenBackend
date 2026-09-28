@@ -53,6 +53,8 @@ const InquiryModelSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
+            enum: ["new", "pending", "contacted", "in-progress", "completed", "rejected"],
+            default: "pending",
         }
 
     },

@@ -3,19 +3,33 @@ import UserModel from "../models/UserModel.js";
 import jwt from "jsonwebtoken";
 
 import { isEmailExists,isPhoneExists,} from "../services/UserValidation.Services.js";
-import { verifyOtp } from "../../../Services/OptServices.js";
+import { deleteOtp, verifyOtp } from "../../../Services/OptServices.js";
 
 
 // ======================================================
 // COOKIE OPTIONS
 // ======================================================
 
+const sameSite = process.env.COOKIE_SAME_SITE || (process.env.NODE_ENV === "production" ? "none" : "lax");
+const cookieSecure = process.env.NODE_ENV === "production" || sameSite === "none";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: "none",
+  secure: cookieSecure,
+  sameSite,
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",
 };
+
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: cookieSecure,
+  sameSite,
+  path: "/",
+};
+
+const getUserRole = (user) =>
+  user.role === "admin" || user.roles?.includes("admin") ? "admin" : "user";
 
 
 // ======================================================
@@ -35,7 +49,6 @@ const userSignup = async (req, res) => {
       "phone",
       "password",
       "address",
-      "profileImage",
     ];
 
     const requiredFieldsInAddress = [
@@ -44,7 +57,6 @@ const userSignup = async (req, res) => {
       "city",
       "pinCode",
       "addressLine1",
-      "addressLine2",
     ];
 
     const missingFields = requiredFields.filter((item) => {
@@ -123,12 +135,12 @@ const userSignup = async (req, res) => {
       });
     }
 
-    const isOtpVerifyed = verifyOtp(
-      commingData.phone,
+    const otpVerification = await verifyOtp(
+      String(commingData.phone),
       commingData.otp
     );
 
-    if (!isOtpVerifyed) {
+    if (!otpVerification.success) {
       return res.status(400).json({
         success: false,
         message: "otp not verified",
@@ -153,6 +165,8 @@ const userSignup = async (req, res) => {
       address: commingData.address,
       profileImage: commingData.profileImage,
     });
+
+    await deleteOtp(String(commingData.phone));
 
     const userResponse = user.toObject();
 
@@ -273,7 +287,8 @@ const userLogin = async (req, res) => {
         userId: user._id,
         email: user.email,
         phone: user.phone,
-        roles: user.roles,
+        role: getUserRole(user),
+        roles: [getUserRole(user)],
       },
       process.env.JWT_REFRESH_TOKEN_SECRET,
       {
@@ -291,7 +306,8 @@ const userLogin = async (req, res) => {
         userId: user._id,
         email: user.email,
         phone: user.phone,
-        roles: user.roles,
+        role: getUserRole(user),
+        roles: [getUserRole(user)],
       },
       process.env.JWT_ACCESS_TOKEN_SECRET,
       {
@@ -374,9 +390,6 @@ const refreshAccessToken = async (req, res) => {
   try {
     console.log("Hit refreshAccessToken Api...");
 
-    // IMPORTANT DEBUG
-    console.log("Cookies received:", req.cookies);
-
     const UserRefreshToken =
       req.cookies?.RefreshToken;
 
@@ -422,7 +435,8 @@ const refreshAccessToken = async (req, res) => {
     if (!user) {
       console.log("User Not Found");
 
-      return res.status(400).json({
+      res.clearCookie("RefreshToken", clearCookieOptions);
+      return res.status(401).json({
         success: false,
         message: "User Not Found",
         data: null,
@@ -442,10 +456,7 @@ const refreshAccessToken = async (req, res) => {
         "Refresh token is invalid or revoked"
       );
 
-      res.clearCookie(
-        "RefreshToken",
-        cookieOptions
-      );
+      res.clearCookie("RefreshToken", clearCookieOptions);
 
       return res.status(401).json({
         success: false,
@@ -466,7 +477,8 @@ const refreshAccessToken = async (req, res) => {
         userId: user._id,
         email: user.email,
         phone: user.phone,
-        roles: user.roles,
+        role: getUserRole(user),
+        roles: [getUserRole(user)],
       },
       process.env.JWT_REFRESH_TOKEN_SECRET,
       {
@@ -484,7 +496,8 @@ const refreshAccessToken = async (req, res) => {
         userId: user._id,
         email: user.email,
         phone: user.phone,
-        roles: user.roles,
+        role: getUserRole(user),
+        roles: [getUserRole(user)],
       },
       process.env.JWT_ACCESS_TOKEN_SECRET,
       {
@@ -545,6 +558,7 @@ const refreshAccessToken = async (req, res) => {
         "Invalid or expired refresh token"
       );
 
+      res.clearCookie("RefreshToken", clearCookieOptions);
       return res.status(401).json({
         success: false,
         message:
@@ -564,6 +578,36 @@ const refreshAccessToken = async (req, res) => {
 };
 
 
+const userLogout = async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.RefreshToken;
+    const decodedToken = refreshToken ? jwt.decode(refreshToken) : null;
+
+    if (decodedToken?.userId) {
+      await UserModel.findOneAndUpdate(
+        { _id: decodedToken.userId, refreshToken },
+        { refreshToken: null }
+      );
+    }
+
+    res.clearCookie("RefreshToken", clearCookieOptions);
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+      data: null,
+      error: null,
+    });
+  } catch (error) {
+    res.clearCookie("RefreshToken", clearCookieOptions);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      data: null,
+      error: error.message,
+    });
+  }
+};
+
 // ======================================================
 // EXPORT
 // ======================================================
@@ -571,5 +615,6 @@ const refreshAccessToken = async (req, res) => {
 export {
   userSignup,
   userLogin,
+  userLogout,
   refreshAccessToken,
 };

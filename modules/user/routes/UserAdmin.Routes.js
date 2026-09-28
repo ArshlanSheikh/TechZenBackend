@@ -8,7 +8,7 @@ const UserAdminRoutes = express.Router()
 
 
 UserAdminRoutes.get('/',Authontication,Authorization(["admin"]),GetAllUsers)
-UserAdminRoutes.get('/singel/:userId',Authontication,Authorization(["buyer","admin"]),GetSingleUser)
+UserAdminRoutes.get('/singel/:userId',Authontication,Authorization(["user","admin"]),GetSingleUser)
 UserAdminRoutes.post('/update/:userId',Authontication,Authorization(["admin"]),UpdateUser)
 UserAdminRoutes.post('/remove/:userId',Authontication,Authorization(["admin"]),DeleteUser)
 

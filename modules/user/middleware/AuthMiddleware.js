@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 
 
 
-// ,Authontication,Authorization(["admin","buyer"])
+// ,Authontication,Authorization(["admin","user"])
 
 const Authontication = (req,res,next)=>{
     try{
@@ -24,7 +24,8 @@ const Authontication = (req,res,next)=>{
             userId:decodedAccessToken.userId,
             email:decodedAccessToken.email,
             phone:decodedAccessToken.phone,
-            roles:decodedAccessToken.roles,
+            role: decodedAccessToken.role || decodedAccessToken.roles?.find((role) => role === "admin") || "user",
+            roles: [...new Set([...(decodedAccessToken.roles || []), decodedAccessToken.role || "user"])],
         }
 
         console.log('Pass Authontication Middleware...')
@@ -61,7 +62,8 @@ const Authorization = (AllowedRoles)=>{
         try{
             console.log('hit Authorization Middleware...')
             
-            const hasRole = req.user.roles.some(role => AllowedRoles.includes(role));
+            const roles = Array.isArray(req.user.roles) ? req.user.roles : [req.user.role];
+            const hasRole = roles.some(role => AllowedRoles.includes(role)) || AllowedRoles.includes(req.user.role);
 
             console.log('hasRole',hasRole)
 

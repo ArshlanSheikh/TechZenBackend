@@ -120,7 +120,7 @@ const RegisterInquiry = async (req, res) => {
         }
 
 
-        commingData['status'] = 'new'
+        commingData['status'] = 'pending'
         commingData.company = commingData.company === "" ? "private" : commingData.company;
 
         const NewInquiry = await InquiryModel.create(commingData);
@@ -153,10 +153,21 @@ const RegisterInquiry = async (req, res) => {
 const UpdateInquiry = async (req, res) => {
     try {
         const { id } = req.params;
+        const allowedStatuses = ["new", "pending", "contacted", "in-progress", "completed", "rejected"];
+        const { status } = req.body;
+
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid inquiry status",
+                data: null,
+                error: "INVALID_STATUS",
+            });
+        }
 
         const UpdatedInquiry = await InquiryModel.findByIdAndUpdate(
             id,
-            req.body,
+            { status },
             {
                 new: true,
                 runValidators: true,
