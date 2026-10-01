@@ -1,5 +1,5 @@
 import express from "express";
-// import dotenv from "dotenv";
+import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
 import path from 'node:path'
@@ -13,25 +13,55 @@ import ConnectDB from "./dbConfig.js";
 
 const app = express()
 
-// dotenv.config()
+dotenv.config()
 
-const allowedOrigins = new Set([
-    "http://localhost:5173",
-    ...(process.env.FRONTEND_ORIGINS || "").split(",").map((origin) => origin.trim()).filter(Boolean),
-])
+// const allowedOrigins = new Set([
+//     "http://localhost:5173",
+//     ...(process.env.FRONTEND_ORIGINS || "").split(",").map((origin) => origin.trim()).filter(Boolean),
+// ])
+
+// app.use(cors({
+//     origin(origin, callback) {
+//         if (!origin || allowedOrigins.has(origin)) {
+//             return callback(null, true)
+//         }
+
+//         return callback(new Error("Origin is not allowed by CORS"))
+//     },
+//     credentials:true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+// }))
 
 app.use(cors({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.has(origin)) {
-            return callback(null, true)
+        // Allow non-browser clients (curl, Postman) — no CORS header needed
+        if (!origin) return callback(null, true)
+
+        // Build the allowed list fresh — always sees the latest env vars
+        const allowedOrigins = new Set([
+            "http://localhost:5173",
+            ...(process.env.FRONTEND_ORIGINS || "")
+                .split(",")
+                .map((o) => o.trim().replace(/\/$/, ""))
+                .filter(Boolean),
+        ])
+
+        console.log("[CORS] origin:", origin, "| allowed:", [...allowedOrigins])
+
+        if (allowedOrigins.has(origin)) {
+            return callback(null, origin)   // ⭐ return the exact origin string
         }
 
-        return callback(new Error("Origin is not allowed by CORS"))
+        console.log("[CORS] ❌ Blocked:", origin)
+        return callback(new Error(`Origin ${origin} not allowed by CORS`))
     },
-    credentials:true,
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 }))
+
+
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
