@@ -1,18 +1,19 @@
 import express from "express";
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import IndexRoutes from "./modules/index.js";
+import ConnectDB from "./dbConfig.js";
 
 
 
 
 const app = express()
 
-dotenv.config()
+// dotenv.config()
 
 const allowedOrigins = new Set([
     "http://localhost:5173",
@@ -36,12 +37,30 @@ app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
 app.use('/uploads', express.static(path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'uploads')))
 
+
+// ⭐ DB connect BEFORE every route
+app.use(async (req, res, next) => {
+  try {
+    await ConnectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ success: false, message: "DB connection failed", error: err.message });
+  }
+});
+
+
 app.use(IndexRoutes)
 
+
 app.use("/",async(req,res)=>{
+    console.log('/ request hit Backend running Successfully..')
     return res.status(200).json({success:true,message:"Backend running Successfully..",data:null,error:null})
 })
 
+app.use("/health",async(req,res)=>{
+    console.log('/health request hit Get Health Successfully..')
+    return res.status(200).json({success:true,message:"Get Health Successfully..",data:null,error:null})
+})
 
 
 
