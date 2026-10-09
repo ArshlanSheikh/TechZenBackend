@@ -1,3 +1,5 @@
+
+
 const send = (res, status, message, data, error = null) =>
   res.status(status).json({ success: status < 400, message, data, error });
 
@@ -11,6 +13,7 @@ const withSlug = (body) => {
   }
   return normalized;
 };
+
 
 export const createContentController = (Model, { publicFilter = { isActive: true }, sortable = true } = {}) => ({
   listPublic: async (_req, res) => {

@@ -3,6 +3,8 @@ import CompanyContent from "./CompanyModel.js";
 const response = (res, status, message, data, error = null) =>
   res.status(status).json({ success: status < 400, message, data, error });
 
+
+
 export const getCompany = async (_req, res) => {
   try {
     const content = await CompanyContent.findOne({ key: "main" }).lean();
