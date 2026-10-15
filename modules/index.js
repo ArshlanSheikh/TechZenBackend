@@ -14,6 +14,8 @@ import FaqRoutes from './cms/faq/FaqRoutes.js';
 import CompanyRoutes from './cms/company/CompanyRoutes.js';
 import OverviewRoutes from './cms/overview/OverviewRoutes.js';
 import UploadRoutes from './cms/uploads/UploadRoutes.js';
+import TrainingRoutes from './cms/training/TrainingRoutes.js';
+import TrainingCategoryRoutes from './cms/training/TrainingCategoryRoutes.js';
 
 
 
@@ -30,6 +32,8 @@ IndexRoutes.use('/api/v1/user/admin',UserAdminRoutes)
 IndexRoutes.use('/api/v1/projects', ProjectRoutes)
 IndexRoutes.use('/api/v1/team', TeamRoutes)
 IndexRoutes.use('/api/v1/services', ServiceRoutes)
+IndexRoutes.use('/api/v1/training-categories', TrainingCategoryRoutes)
+IndexRoutes.use('/api/v1/trainings', TrainingRoutes)
 IndexRoutes.use('/api/v1/faqs', FaqRoutes)
 IndexRoutes.use('/api/v1/company', CompanyRoutes)
 IndexRoutes.use('/api/v1/admin/overview', OverviewRoutes)

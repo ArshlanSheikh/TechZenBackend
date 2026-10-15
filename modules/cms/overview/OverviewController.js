@@ -3,10 +3,11 @@ import Project from "../projects/ProjectModel.js";
 import TeamMember from "../team/TeamModel.js";
 import Service from "../services/ServiceModel.js";
 import Faq from "../faq/FaqModel.js";
+import Training from "../training/TrainingModel.js";
 
 export const getOverview = async (_req, res) => {
   try {
-    const [totalInquiries, pendingInquiries, contactedInquiries, completedInquiries, totalProjects, totalTeamMembers, totalServices, recentInquiries, recentProjects, totalFaqs] = await Promise.all([
+    const [totalInquiries, pendingInquiries, contactedInquiries, completedInquiries, totalProjects, totalTeamMembers, totalServices, recentInquiries, recentProjects, totalFaqs, totalTrainings] = await Promise.all([
       Inquiry.countDocuments(),
       Inquiry.countDocuments({ status: { $in: ["new", "pending"] } }),
       Inquiry.countDocuments({ status: "contacted" }),
@@ -17,6 +18,7 @@ export const getOverview = async (_req, res) => {
       Inquiry.find().sort({ createdAt: -1 }).limit(5).lean(),
       Project.find({ isPublished: true }).sort({ createdAt: -1 }).limit(5).lean(),
       Faq.countDocuments({ isActive: true }),
+      Training.countDocuments({ isActive: true }),
     ]);
 
     return res.status(200).json({
@@ -27,6 +29,7 @@ export const getOverview = async (_req, res) => {
         projects: { total: totalProjects, recent: recentProjects },
         teamMembers: totalTeamMembers,
         services: totalServices,
+        trainings: totalTrainings,
         faqs: totalFaqs,
       },
       error: null,
